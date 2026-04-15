@@ -3,7 +3,7 @@ import os
 import time
 import uuid
 import requests
-import sqlite3
+import psycopg2  # ZMĚNA: Používáme knihovnu pro PostgreSQL
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -21,8 +21,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-k_ILpNLyqBVD-6yqHXzvow")
 # Definice českého času
 CZ_TIMEZONE = timezone(timedelta(hours=2))
 
-# OPRAVA 1: Cesta k DB podle zadání na screenshotu (/data místo /app/data)
-DB_PATH = "/data/chat.db"
+# ZMĚNA: Připojovací řetězec pro PostgreSQL (podle zadání)
+DB_URL = os.getenv("DATABASE_URL", "postgresql://mahulina:heslo123@db:5432/mahulina_db")
 
 SYSTEM_PROMPT = (
     "Jsi milá a chytrá česká asistentka Mahulina. "
@@ -32,26 +32,32 @@ SYSTEM_PROMPT = (
 
 DEFAULT_WELCOME = "Ahoj! Jsem tvoje asistentka Mahulina. S čím ti dnes pomůžu s přípravou na maturitu? 🌸"
 
-# --- JEDNODUCHÁ DATABÁZE (SQLite) ---
+# --- ZMĚNA: DATABÁZE PŘESUNUTA NA POSTGRESQL ---
 def init_db():
-    # Vytvoří složku, pokud neexistuje
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    # Vytvoří tabulku pro zprávy
-    conn.execute("CREATE TABLE IF NOT EXISTS messages (sid TEXT, role TEXT, content TEXT, ts DATETIME)")
+    # Připojení k externí databázi
+    conn = psycopg2.connect(DB_URL)
+    cur = conn.cursor()
+    # Vytvoří tabulku, pokud neexistuje
+    cur.execute("CREATE TABLE IF NOT EXISTS messages (sid TEXT, role TEXT, content TEXT, ts TIMESTAMP)")
+    conn.commit()
+    cur.close()
     conn.close()
 
 def save_msg(sid, role, content):
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("INSERT INTO messages VALUES (?, ?, ?, ?)", 
+    conn = psycopg2.connect(DB_URL)
+    cur = conn.cursor()
+    cur.execute("INSERT INTO messages (sid, role, content, ts) VALUES (%s, %s, %s, %s)", 
                  (sid, role, content, datetime.now(CZ_TIMEZONE)))
     conn.commit()
+    cur.close()
     conn.close()
 
 def get_msgs(sid):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.execute("SELECT role, content FROM messages WHERE sid = ? ORDER BY ts ASC", (sid,))
-    rows = cursor.fetchall()
+    conn = psycopg2.connect(DB_URL)
+    cur = conn.cursor()
+    cur.execute("SELECT role, content FROM messages WHERE sid = %s ORDER BY ts ASC", (sid,))
+    rows = cur.fetchall()
+    cur.close()
     conn.close()
     return [{"role": r, "content": c} for r, c in rows]
 
@@ -132,7 +138,6 @@ def chat(payload: ChatPayload):
     }
 
     try:
-        # OPRAVA 2: Timeout a kontrola spojení, aby to neházelo "Nedostupný server"
         response = requests.post(
             LM_STUDIO_URL,
             json=body,
@@ -155,7 +160,6 @@ def chat(payload: ChatPayload):
         return {"answer": answer, "session_id": session_id}
 
     except Exception as e:
-        # Pokud AI server neodpovídá, pošleme aspoň milou omluvu místo chyby
         return {"answer": "Omlouvám se, Mahulina teď odpočívá. Zkus to za chvilku! ✨", "session_id": session_id}
 
 @app.get("/api/history/{session_id}")

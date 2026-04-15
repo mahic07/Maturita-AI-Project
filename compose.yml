@@ -1,12 +1,21 @@
 version: "3.9"
-
 services:
+  # 1. KONTEJNER: Tvoje aplikace
   maturita-app:
     build: .
-    container_name: maturita-app
     ports:
       - "8081:8081"
     environment:
-      - LM_STUDIO_URL=https://kurim.ithope.eu/v1/chat/completions
-      - LM_STUDIO_TIMEOUT=60
+      - DATABASE_URL=postgresql://mahulina:heslo123@db:5432/mahulina_db
       - OPENAI_API_KEY=sk-k_ILpNLyqBVD-6yqHXzvow
+      - LM_STUDIO_URL=https://kurim.ithope.eu/v1/chat/completions
+    depends_on:
+      - db
+
+  # 2. KONTEJNER: Databáze (Povinné pro uznání!)
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=mahulina
+      - POSTGRES_PASSWORD=heslo123
+      - POSTGRES_DB=mahulina_db
