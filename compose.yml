@@ -6,8 +6,6 @@ services:
     container_name: maturita-app
     ports:
       - "8081:8081"
-    volumes:
-      - ./data:/app/data
     environment:
       - LM_STUDIO_URL=https://kurim.ithope.eu/v1/chat/completions
       - LM_STUDIO_TIMEOUT=60
