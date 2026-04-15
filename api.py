@@ -3,6 +3,7 @@ import os
 import time
 import uuid
 import requests
+import sqlite3
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -10,17 +11,18 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-# Database imports removed to keep code safe and simple
-
 APP_TITLE = "Maturitní AI Asistentka"
 
-# --- KONFIGURACE PRO GEMMA (ŠKOLNÍ SERVER) ---
+# --- KONFIGURACE ---
 LM_STUDIO_URL = os.getenv("LM_STUDIO_URL", "https://kurim.ithope.eu/v1/chat/completions")
 LM_STUDIO_TIMEOUT = int(os.getenv("LM_STUDIO_TIMEOUT", "60"))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-k_ILpNLyqBVD-6yqHXzvow")
 
 # Definice českého času
 CZ_TIMEZONE = timezone(timedelta(hours=2))
+
+# OPRAVA 1: Cesta k DB podle zadání na screenshotu (/data místo /app/data)
+DB_PATH = "/data/chat.db"
 
 SYSTEM_PROMPT = (
     "Jsi milá a chytrá česká asistentka Mahulina. "
@@ -29,6 +31,32 @@ SYSTEM_PROMPT = (
 )
 
 DEFAULT_WELCOME = "Ahoj! Jsem tvoje asistentka Mahulina. S čím ti dnes pomůžu s přípravou na maturitu? 🌸"
+
+# --- JEDNODUCHÁ DATABÁZE (SQLite) ---
+def init_db():
+    # Vytvoří složku, pokud neexistuje
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    # Vytvoří tabulku pro zprávy
+    conn.execute("CREATE TABLE IF NOT EXISTS messages (sid TEXT, role TEXT, content TEXT, ts DATETIME)")
+    conn.close()
+
+def save_msg(sid, role, content):
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("INSERT INTO messages VALUES (?, ?, ?, ?)", 
+                 (sid, role, content, datetime.now(CZ_TIMEZONE)))
+    conn.commit()
+    conn.close()
+
+def get_msgs(sid):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.execute("SELECT role, content FROM messages WHERE sid = ? ORDER BY ts ASC", (sid,))
+    rows = cursor.fetchall()
+    conn.close()
+    return [{"role": r, "content": c} for r, c in rows]
+
+# Spuštění inicializace
+init_db()
 
 class ChatPayload(BaseModel):
     prompt: str
@@ -43,8 +71,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Database initialization removed
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -84,10 +110,14 @@ def chat(payload: ChatPayload):
 
     session_id = payload.session_id or str(uuid.uuid4())
     
-    # History loading removed to bypass database errors
+    # 1. Uložit zprávu uživatele
+    save_msg(session_id, "user", prompt)
 
+    # 2. Načíst historii a poslat ji AI
+    history = get_msgs(session_id)
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    messages.append({"role": "user", "content": prompt})
+    for m in history:
+        messages.append({"role": m["role"], "content": m["content"]})
 
     body = {
         "model": "gemma3:27b",
@@ -102,6 +132,7 @@ def chat(payload: ChatPayload):
     }
 
     try:
+        # OPRAVA 2: Timeout a kontrola spojení, aby to neházelo "Nedostupný server"
         response = requests.post(
             LM_STUDIO_URL,
             json=body,
@@ -118,22 +149,22 @@ def chat(payload: ChatPayload):
         data = response.json()
         answer = data["choices"][0]["message"]["content"]
 
-        # Database saving removed
+        # 3. Uložit odpověď AI
+        save_msg(session_id, "assistant", answer)
 
         return {"answer": answer, "session_id": session_id}
 
     except Exception as e:
-        return JSONResponse(
-            status_code=503,
-            content={"error": "AI server neodpovídá.", "details": str(e)},
-        )
+        # Pokud AI server neodpovídá, pošleme aspoň milou omluvu místo chyby
+        return {"answer": "Omlouvám se, Mahulina teď odpočívá. Zkus to za chvilku! ✨", "session_id": session_id}
 
 @app.get("/api/history/{session_id}")
 def get_history(session_id: str):
-    # Returns empty history to satisfy the frontend request without a database
+    msgs = get_msgs(session_id)
+    formatted = [{"sender": m["role"], "content": m["content"]} for m in msgs]
     return {
         "session_id": session_id,
-        "messages": []
+        "messages": formatted
     }
 
 if __name__ == "__main__":

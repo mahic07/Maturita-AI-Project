@@ -1,12 +1,14 @@
+version: "3.9"
+
 services:
-  # Tvoje aplikace (FastAPI) - Jediný kontejner
   maturita-app:
     build: .
     container_name: maturita-app
     ports:
       - "8081:8081"
+    volumes:
+      - ./data:/app/data
     environment:
-      # Školní Gemma API konfigurace
-      LM_STUDIO_URL: https://kurim.ithope.eu/v1/chat/completions
-      LM_STUDIO_TIMEOUT: 60
-      OPENAI_API_KEY: sk-k_ILpNLyqBVD-6yqHXzvow
+      - LM_STUDIO_URL=https://kurim.ithope.eu/v1/chat/completions
+      - LM_STUDIO_TIMEOUT=60
+      - OPENAI_API_KEY=sk-k_ILpNLyqBVD-6yqHXzvow
