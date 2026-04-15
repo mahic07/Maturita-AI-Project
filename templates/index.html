@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="background-scene" aria-hidden="true">
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+
+        <div class="floating-books">
+            <div class="book book-1" data-title="CJ"><span></span></div>
+            <div class="book book-2" data-title="AJ"><span></span></div>
+            <div class="book book-3" data-title="MAT"><span></span></div>
+            <div class="book book-4" data-title="EPO"><span></span></div>
+            <div class="book book-5" data-title="EGS"><span></span></div>
+            <div class="book book-6" data-title="EPS"><span></span></div>
+            <div class="book book-7" data-title="EOS"><span></span></div>
+            <div class="book book-8" data-title="ECT"><span></span></div>
+            <div class="book book-9" data-title="EOS"><span></span></div>
+            <div class="book book-10" data-title="EOS"><span></span></div>
+            <div class="book book-11" data-title="CJ"><span></span></div>
+            <div class="book book-12" data-title="AJ"><span></span></div>
+            <div class="book book-13" data-title="MAT"><span></span></div>
+            <div class="book book-14" data-title="EPO"><span></span></div>
+            <div class="book book-15" data-title="EOS"><span></span></div>
+            <div class="book book-16" data-title="EGS"><span></span></div>
+        </div>
+    </div>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-inner glass-panel">
+                <h2>✨ Moje Menu</h2>
+
+                <button id="pingBtn" class="menu-btn">🌸 Kontrola (/ping)</button>
+                <button id="statusBtn" class="menu-btn">📋 Status (/status)</button>
+
+                <div id="statusBox" class="status-box hidden"></div>
+
+                <div class="sidebar-card">
+                    <b>💖 Info Panel</b><br>
+                    Vytvořila: Mahulina ✨<br>
+                    Status: Online &amp; Cute<br>
+                    Čas: <span id="sidebarTime">{{ current_time }}</span>
+                    <hr>
+                    <small>Brain: Gemma 3 (27B)</small>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content" id="mainContent">
+            <section class="hero-container glass-panel">
+                <h1 class="hero-title">🎓 Maturitní AI Pomocník</h1>
+                <p class="hero-subtitle">Zeptejte se na cokoliv ohledně maturity (EOS, CJ, AJ, EPO, EGS, EČT) ✨</p>
+            </section>
+
+            <section id="chat" class="chat-container">
+                <article class="message assistant glass-panel">
+                    <div class="message-content">{{ welcome_message }}</div>
+                </article>
+            </section>
+
+            <form id="chatForm" class="chat-input-wrap glass-panel">
+                <input id="promptInput" type="text" placeholder="Ráda vám pomůžu..." autocomplete="off">
+                <button type="submit">Odeslat</button>
+            </form>
+        </main>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
