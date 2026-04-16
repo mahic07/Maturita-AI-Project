@@ -16,8 +16,7 @@ APP_TITLE = "Maturitní AI Asistentka"
 # --- KONFIGURACE ---
 LM_STUDIO_URL = os.getenv("LM_STUDIO_URL", "https://kurim.ithope.eu/v1/chat/completions")
 LM_STUDIO_TIMEOUT = int(os.getenv("LM_STUDIO_TIMEOUT", "60"))
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-k_ILpNLyqBVD-6yqHXzvow")
-
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # Definice českého času
 CZ_TIMEZONE = timezone(timedelta(hours=2))
 

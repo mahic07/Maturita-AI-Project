@@ -1,48 +1,50 @@
-# 🌸 Maturitní AI Asistentka Mahulina
+# Maturitní projekt: AI Asistentka Mahulina ✨
 
-Tento projekt je interaktivní webová aplikace postavená na frameworku **FastAPI**. Slouží jako inteligentní pomocník pro studenty připravující se na maturitu, využívající model **Gemma 3**.
+Tento projekt byl vytvořen jako maturitní práce v rámci předmětu eos. Jedná se o webovou aplikaci, která slouží jako interaktivní asistentka pro studenty připravující se na maturitu.
 
-## 🛠 Jak projekt funguje (Architektura)
+## 📄 Popis projektu
+Mahulina je inteligentní chatovací bot, který využívá velký jazykový model (LLM) k odpovídání na dotazy uživatelů. Aplikace je navržena tak, aby si pamatovala historii konverzace pro každého uživatele zvlášť díky propojení s externí databází.
 
-Celá aplikace funguje jako řetězec tří hlavních částí:
+**Hlavní funkce:**
+* Interaktivní chatovací rozhraní v češtině.
+* Trvalé ukládání historie zpráv (zůstane i po obnovení stránky).
+* Integrace s AI modelem přes OpenAI-kompatibilní API.
+* Monitorování stavu systému přes API endpointy `/ping` a `/status`.
 
-1.  **Frontend (To, co vidíš):** HTML, CSS a JavaScript v tvém prohlížeči. JavaScript sbírá tvoje otázky a posílá je "za oponu" na tvůj server.
-2.  **Backend (Mozeček - api.py):** Běží v Dockeru. Přijímá otázky z prohlížeče, přidá k nim instrukce (System Prompt - jak se má Mahulina chovat) a přepošle je s tvým klíčem na velký AI server.
-3.  **AI Server (Školní mozek):** Zpracuje text pomocí modelu `gemma3:27b` a pošle odpověď zpět tvému backendu, který ji doručí až k tobě do chatu.
+## 🛠 Použité technologie
+[cite_start]Projekt je postaven na moderní kontejnerizované architektuře (Varianta A podle zadání)[cite: 8]:
+* **Backend:** Python 3.11 s frameworkem **FastAPI**.
+* [cite_start]**Databáze:** **PostgreSQL 15** (běží jako samostatný kontejner)[cite: 44].
+* **Frontend:** HTML5, CSS3 (moderní tmavý design) a JavaScript (Fetch API).
+* [cite_start]**Kontejnerizace:** **Docker** a **Docker Compose**[cite: 15, 42].
+* [cite_start]**AI Model:** `gemma3:27b` poskytovaný školním serverem[cite: 46].
 
-## 🚀 Spuštění přes PowerShell
+## 🏗 Architektura systému
+[cite_start]V souladu se zadáním projekt využívá dva kontejnery, které spolu komunikují přes interní síť Dockeru[cite: 21, 23]:
+1.  **maturita-app**: Obsahuje samotnou logiku aplikace, API a obsluhu frontendu.
+2.  [cite_start]**db**: Oficiální obraz PostgreSQL pro ukládání dat[cite: 36].
 
-Pokud vyvíjíš lokálně na Windows, otevři **PowerShell** ve složce projektu a použij tyto příkazy:
 
-1.  **Sestavení a spuštění:**
+
+## 🚀 Jak spustit projekt
+[cite_start]Projekt je optimalizován pro nasazení na portálu **kurim.ithope.eu**[cite: 37].
+
+1.  **Lokální spuštění:**
     ```powershell
     docker-compose up --build
     ```
-    *Tento příkaz vezme tvůj Dockerfile, stáhne Python, nainstaluje knihovny z requirements.txt a spustí aplikaci na portu 8081.*
+    Aplikace bude dostupná na adrese `http://localhost:8081`.
 
-2.  **Zastavení aplikace:**
-    Stiskni `Ctrl + C` nebo v novém okně napiš:
-    ```powershell
-    docker-compose down
-    ```
+2.  **Nasazení na server:**
+    * [cite_start]Nahrát kód do veřejného GitHub repozitáře[cite: 20].
+    * [cite_start]V dashboardu kurim.ithope.eu nastavit proměnné prostředí: `OPENAI_API_KEY`, `LM_STUDIO_URL` a `DATABASE_URL`[cite: 45].
+    * [cite_start]Spustit nasazení (Deploy)[cite: 48].
 
-## 📂 Struktura souborů
+## 📋 Splnění požadavků (Varianta A)
+* Veřejné GitHub repo[cite: 20].
+* Dva komunikující kontejnery (App + Postgres)[cite: 21, 23, 36].
+* Reálné využití databáze (zápis i čtení historie)[cite: 24, 25, 47].
+* Volání LLM modelu přes API[cite: 26, 27].
+* Soubor `compose.yml` v kořenovém adresáři[cite: 42].
 
-- `api.py` — **Srdce aplikace.** Obsahuje API routy (endpointy) pro chat, status a čas.
-- `templates/index.html` — **Kostra webu.** Definice toho, kde je chatovací okno a tlačítka.
-- `static/css/style.css` — **Vzhled.** Pink-Purple barvy, animace z js a moderní design.
-- `static/js/app.js` — **Logika webu.** Zpracovává kliknutí na tlačítka a vypisuje odpovědi z AI.
-- `Dockerfile` — **Recept na kontejner.** Říká Dockeru, jak připravit prostředí pro Python.
-- `docker-compose.yml` — **Správce spuštění.** Nastavuje porty a propojuje tvůj kód s AI serverem pomocí klíčů.
-
-## ⚙️ Technologie
-Aplikace je tak, aby byla flexibilní a mohla běžet v různých prostředích tak ve škole a doma:
-
-- **na kurim.ithope.eu:** - Využívá výkonný model **Gemma 3 (27B)**.
-  - Připojení probíhá přes školní API gateway s autorizací pomocí tokenu.
-  
-- **Lokální na muj pc (PowerShell / localhost):** - Optimalizováno pro běh na běžném hardwaru s modelem **Llama 3.2 1B** (přes LM Studio).
-  - Backend automaticky komunikuje s lokálním endpointem, pokud není nastaven jiný.
-
-- **Jazyk a Framework:** Python 3.9+ a FastAPI.
-- **Kontejnerizace:** Docker – zajišťuje, že se aplikace chová stejně na Windows (PowerShell) i na Linuxovém serveru.
+**Autor:** Mahi Chauhan IT4B
