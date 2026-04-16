@@ -1,18 +1,17 @@
 version: "3.9"
+
 services:
-  # 1. KONTEJNER: Tvoje aplikace
   maturita-app:
     build: .
     ports:
       - "8081:8081"
-   environment:
+    environment:
       - DATABASE_URL=postgresql://mahulina:heslo123@db:5432/mahulina_db
-      - OPENAI_API_KEY=${OPENAI_API_KEY}  
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - LM_STUDIO_URL=https://kurim.ithope.eu/v1/chat/completions
     depends_on:
       - db
 
-  # 2. KONTEJNER: Databáze (Povinné pro uznání!)
   db:
     image: postgres:15
     environment:
