@@ -7,8 +7,7 @@ const statusBox = document.getElementById("statusBox");
 const toast = document.getElementById("toast");
 const sidebarTime = document.getElementById("sidebarTime");
 
-// --- SESSION LOGIKA ---
-// Vytvoří nebo načte ID relace, aby historie patřila správnému uživateli
+
 let sessionId = localStorage.getItem("chatSessionId") || generateSessionId();
 localStorage.setItem("chatSessionId", sessionId);
 
@@ -24,7 +23,7 @@ function escapeHtml(text) {
 
 function addMessage(role, content, isHtml = false) {
     const article = document.createElement("article");
-    // Přidána třída glass-panel pro vizuální konzistenci
+
     article.className = `message ${role} glass-panel`; 
 
     const inner = document.createElement("div");
@@ -34,19 +33,17 @@ function addMessage(role, content, isHtml = false) {
     article.appendChild(inner);
     chat.appendChild(article);
     
-    // Automatické scrollování dolů
     article.scrollIntoView({ behavior: "smooth", block: "end" });
     return article;
 }
 
-// --- NAČTENÍ HISTORIE Z DATABÁZE ---
 async function loadHistory() {
     try {
         const res = await fetch(`/api/history/${sessionId}`);
         if (res.ok) {
             const data = await res.json();
             if (data.messages && data.messages.length > 0) {
-                // Pokud máme historii, vymažeme úvodní uvítání a nahradíme ho zprávami z DB
+
                 chat.innerHTML = ""; 
                 data.messages.forEach(msg => {
                     addMessage(msg.sender === "user" ? "user" : "assistant", msg.content);
@@ -91,7 +88,6 @@ async function loadStatus() {
     }
 }
 
-// --- EVENT LISTENERY ---
 
 pingBtn.addEventListener("click", loadPing);
 statusBtn.addEventListener("click", loadStatus);
@@ -101,12 +97,10 @@ chatForm.addEventListener("submit", async (event) => {
     const prompt = promptInput.value.trim();
     if (!prompt) return;
 
-    // Přidáme zprávu uživatele do UI
     addMessage("user", prompt);
     promptInput.value = "";
     promptInput.focus();
 
-    // Vytvoříme "čekací" bublinu
     const typing = addMessage("assistant", "Přemýšlím, počkej chvilku...");
     const contentDiv = typing.querySelector(".message-content");
     contentDiv.classList.add("typing");
