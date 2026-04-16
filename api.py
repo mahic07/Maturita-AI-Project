@@ -28,12 +28,11 @@ SYSTEM_PROMPT = (
 
 DEFAULT_WELCOME = "Ahoj! Jsem tvoje asistentka Mahulina. S čím ti dnes pomůžu s přípravou na maturitu? 🌸"
 
-# --- ZMĚNA: DATABÁZE PŘESUNUTA NA POSTGRESQL ---
 def init_db():
-    # Připojení k externí databázi
+
     conn = psycopg2.connect(DB_URL)
     cur = conn.cursor()
-    # Vytvoří tabulku, pokud neexistuje
+
     cur.execute("CREATE TABLE IF NOT EXISTS messages (sid TEXT, role TEXT, content TEXT, ts TIMESTAMP)")
     conn.commit()
     cur.close()
@@ -57,7 +56,6 @@ def get_msgs(sid):
     conn.close()
     return [{"role": r, "content": c} for r, c in rows]
 
-# Spuštění inicializace
 init_db()
 
 class ChatPayload(BaseModel):
