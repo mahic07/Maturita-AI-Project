@@ -3,7 +3,7 @@ import os
 import time
 import uuid
 import requests
-import psycopg2  # ZMĚNA: Používáme knihovnu pro PostgreSQL
+import psycopg2  
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -13,14 +13,11 @@ from pydantic import BaseModel
 
 APP_TITLE = "Maturitní AI Asistentka"
 
-# --- KONFIGURACE ---
 LM_STUDIO_URL = os.getenv("LM_STUDIO_URL", "https://kurim.ithope.eu/v1/chat/completions")
 LM_STUDIO_TIMEOUT = int(os.getenv("LM_STUDIO_TIMEOUT", "60"))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-# Definice českého času
 CZ_TIMEZONE = timezone(timedelta(hours=2))
 
-# ZMĚNA: Připojovací řetězec pro PostgreSQL (podle zadání)
 DB_URL = os.getenv("DATABASE_URL", "postgresql://mahulina:heslo123@db:5432/mahulina_db")
 
 SYSTEM_PROMPT = (
@@ -118,7 +115,6 @@ def chat(payload: ChatPayload):
     # 1. Uložit zprávu uživatele
     save_msg(session_id, "user", prompt)
 
-    # 2. Načíst historii a poslat ji AI
     history = get_msgs(session_id)
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for m in history:
@@ -153,7 +149,6 @@ def chat(payload: ChatPayload):
         data = response.json()
         answer = data["choices"][0]["message"]["content"]
 
-        # 3. Uložit odpověď AI
         save_msg(session_id, "assistant", answer)
 
         return {"answer": answer, "session_id": session_id}
