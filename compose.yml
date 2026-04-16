@@ -5,9 +5,9 @@ services:
     build: .
     ports:
       - "8081:8081"
-    environment:
+   environment:
       - DATABASE_URL=postgresql://mahulina:heslo123@db:5432/mahulina_db
-      - OPENAI_API_KEY=sk-k_ILpNLyqBVD-6yqHXzvow
+      - OPENAI_API_KEY=${OPENAI_API_KEY}  
       - LM_STUDIO_URL=https://kurim.ithope.eu/v1/chat/completions
     depends_on:
       - db
